@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: actas-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: whatsapp_evidencias
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - actas-2026
+    labels:
+      - "com.docker.compose.project=actas-2026"
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: actas-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - actas-2026
+    labels:
+      - "com.docker.compose.project=actas-2026"
+
+  # MinIO
+  minio:
+    image: minio/minio:latest
+    container_name: actas-minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # Web Console
+    volumes:
+      - minio_data:/data
+    networks:
+      - actas-2026
+    labels:
+      - "com.docker.compose.project=actas-2026"
+
+# Redes
+networks:
+  actas-2026:
+    driver: bridge
+    name: actas-2026
+
+# Volúmenes persistentes
+volumes:
+  postgres_data:
+    name: actas-postgres-data
+  redis_data:
+    name: actas-redis-data
+  minio_data:
+    name: actas-minio-data

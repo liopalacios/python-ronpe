@@ -1,0 +1,76 @@
+# Entorno virtual
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Archivos de entorno
+.env
+.env.local
+.env.*.local
+
+# Archivos de autenticación
+auth_info/
+*.session
+*.creds
+
+# Bases de datos locales
+*.db
+*.sqlite
+*.sqlite3
+
+# MinIO/AWS
+.minio.sys/
+.aws/
+
+# Logs
+*.log
+logs/
+*.log
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Archivos de prueba
+test_*.py
+tests/
+*.pytest_cache/
+
+# Modelos descargados
+models/
+*.pkl
+*.h5
+*.pb
+
+# Docker
+*.tar.gz
+*.zip
+
+# Archivos temporales
+temp/
+tmp/
+*.tmp
+
+# Backup
+*.bak
+*.backup
+
+# QR temporal
+*.txt
+qr_*.png
+
+# Configuración local
+config_local.py
