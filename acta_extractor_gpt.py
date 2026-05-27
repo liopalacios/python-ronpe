@@ -37,9 +37,9 @@ class ActaExtractorGPT:
             1. NÚMERO DE MESA: Busca junto a "Mesa de sufragio N°" - son 6 dígitos (ejemplo: 047291)
             2. VOTOS JP JUNTOS POR EL PERU: Número manuscrito junto al texto "JUNTOS POR EL PERU" o "JP"
             3. VOTOS FUERZA POPULAR: Número manuscrito junto al texto "FUERZA POPULAR" o "K"
-            4. VOTOS EN BLANCO: Número manuscrito junto al texto "VOTOS EN BLANCO"
-            5. VOTOS NULOS: Número manuscrito junto al texto "VOTOS NULOS"
-            6. VOTOS INPUGNADOS: Número manuscrito junto al texto "VOTOS INPUGNADOS"
+            4. VOTOS EN BLANCO: Número manuscrito junto al texto "VOTOS EN BLANCO" alineado a su fila que le corresponda
+            5. VOTOS NULOS: Número manuscrito junto al texto "VOTOS NULOS" alineado a su fila que le corresponda
+            6. VOTOS INPUGNADOS: Número manuscrito junto al texto "VOTOS IMPUGNADOS" alineado a su fila que le corresponda
 
             RESPONDE SOLO CON JSON en este formato exacto  (sin texto adicional) como ejemplo el siguiente json:
             {
@@ -53,6 +53,10 @@ class ActaExtractorGPT:
 
             Si no puedes leer algún valor, ponlo como null, si la celda está vacía coloca valor cero.
             NO incluyas texto adicional, SOLO el JSON.
+            - La imagen es de un acta electoral oficial, puede tener texto impreso y manuscrito, a veces tachaduras o manchas.
+            - La imagen puede tener diferentes orientaciones, asegúrate de analizarla correctamente.
+            - El número de mesa siempre tiene formato de 6 dígitos, los votos suelen ser números de 1 a 3 dígitos.
+            
             """
         
         print("✅ Extractor GPT-4V listo")
