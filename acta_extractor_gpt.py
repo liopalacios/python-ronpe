@@ -120,8 +120,7 @@ class ActaExtractorGPT:
                 votos_c1 = None
             if votos_c2 and not (0 <= votos_c2 <= 500):
                 votos_c2 = None
-            if votos_blanco and not (0 <= votos_blanco <= 500):
-                votos_blanco = None
+            
             # Determinar qué campos faltan
             missing = []
             if numero_mesa is None:
