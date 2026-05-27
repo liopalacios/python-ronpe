@@ -125,8 +125,8 @@ class ActaExtractor:
         for i, (bbox, text, confidence) in enumerate(ocr_result):
             text_upper = text.upper()
             
-            # Buscar "PERU LIBRE"
-            if "PERU LIBRE" in text_upper or "PERÚ LIBRE" in text_upper:
+            # Buscar "JUNTOS POR EL PERU" o "JP"
+            if "JUNTOS POR EL PERU" in text_upper or "JP" in text_upper:
                 # Buscar número en las siguientes 5 líneas (ampliado)
                 for j in range(i + 1, min(i + 6, len(ocr_result))):
                     next_bbox, next_text, next_conf = ocr_result[j]
@@ -247,7 +247,7 @@ class ActaExtractor:
                     missing.append("número de mesa (formato inválido)")
             
             if votos_c1 is None:
-                missing.append("votos Perú Libre")
+                missing.append("votos Juntos por el Perú")
             if votos_c2 is None:
                 missing.append("votos Fuerza Popular")
             

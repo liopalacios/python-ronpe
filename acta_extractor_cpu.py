@@ -91,8 +91,8 @@ class ActaExtractorCPU:
         for i, (bbox, text, confidence) in enumerate(ocr_result):
             text_upper = text.upper()
             
-            # Perú Libre
-            if "PERU LIBRE" in text_upper or "PERÚ LIBRE" in text_upper:
+            # Juntos por el Perú
+            if "JUNTOS POR EL PERU" in text_upper or "JP" in text_upper:
                 for j in range(i + 1, min(i + 4, len(ocr_result))):
                     next_text = ocr_result[j][1]
                     match = self.votos_pattern.search(next_text)
@@ -101,7 +101,7 @@ class ActaExtractorCPU:
                         break
             
             # Fuerza Popular
-            if "FUERZA POPULAR" in text_upper:
+            if "FUERZA POPULAR" in text_upper or "K" in text_upper:
                 for j in range(i + 1, min(i + 4, len(ocr_result))):
                     next_text = ocr_result[j][1]
                     match = self.votos_pattern.search(next_text)
@@ -143,7 +143,7 @@ class ActaExtractorCPU:
             if numero_mesa is None:
                 missing.append("número de mesa")
             if votos_c1 is None:
-                missing.append("votos Perú Libre")
+                missing.append("votos Juntos por el Perú")
             if votos_c2 is None:
                 missing.append("votos Fuerza Popular")
             

@@ -109,7 +109,7 @@ class ActaExtractorGPU:
         for idx, line in enumerate(lines):
             text = line[1][0].upper()
             
-            if "PERU LIBRE" in text or "PERÚ LIBRE" in text:
+            if "JUNTOS POR EL PERU" in text or "JP" in text:
                 for j in range(idx + 1, min(idx + 4, len(lines))):
                     next_text = lines[j][1][0]
                     match = self.votos_pattern.search(next_text)
@@ -117,7 +117,7 @@ class ActaExtractorGPU:
                         votos_c1 = int(match.group(1))
                         break
             
-            if "FUERZA POPULAR" in text:
+            if "FUERZA POPULAR" in text or "K" in text:
                 for j in range(idx + 1, min(idx + 4, len(lines))):
                     next_text = lines[j][1][0]
                     match = self.votos_pattern.search(next_text)
@@ -153,7 +153,7 @@ class ActaExtractorGPU:
             if numero_mesa is None:
                 missing.append("número de mesa")
             if votos_c1 is None:
-                missing.append("votos Perú Libre")
+                missing.append("votos Juntos por el Perú")
             if votos_c2 is None:
                 missing.append("votos Fuerza Popular")
             

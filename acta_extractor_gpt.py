@@ -32,20 +32,26 @@ class ActaExtractorGPT:
         
         # Prompt especializado para actas electorales
         self.prompt = """
-            Analiza esta imagen de un ACTA ELECTORAL de Perú (ONPE) y extrae EXACTAMENTE estos 3 valores:
+            Analiza esta imagen de un ACTA ELECTORAL de Perú (ONPE) y extrae EXACTAMENTE estos 6 valores:
 
             1. NÚMERO DE MESA: Busca junto a "Mesa de sufragio N°" - son 6 dígitos (ejemplo: 047291)
-            2. VOTOS PERÚ LIBRE: Número manuscrito junto al texto "PERU LIBRE" o "PERÚ LIBRE"
-            3. VOTOS FUERZA POPULAR: Número manuscrito junto al texto "FUERZA POPULAR"
+            2. VOTOS JP JUNTOS POR EL PERU: Número manuscrito junto al texto "JUNTOS POR EL PERU" o "JP"
+            3. VOTOS FUERZA POPULAR: Número manuscrito junto al texto "FUERZA POPULAR" o "K"
+            4. VOTOS EN BLANCO: Número manuscrito junto al texto "VOTOS EN BLANCO"
+            5. VOTOS NULOS: Número manuscrito junto al texto "VOTOS NULOS"
+            6. VOTOS INPUGNADOS: Número manuscrito junto al texto "VOTOS INPUGNADOS"
 
-            RESPONDE SOLO CON JSON en este formato exacto:
+            RESPONDE SOLO CON JSON en este formato exacto  (sin texto adicional) como ejemplo el siguiente json:
             {
                 "numero_mesa": 47291,
-                "votos_peru_libre": 150,
-                "votos_fuerza_popular": 120
+                "votos_jp": 150,
+                "votos_k": 120,
+                "votos_blanco": 5,
+                "votos_nulos": 3,   
+                "votos_inpugnados": 2
             }
 
-            Si no puedes leer algún valor, ponlo como null.
+            Si no puedes leer algún valor, ponlo como null, si la celda está vacía coloca valor cero.
             NO incluyas texto adicional, SOLO el JSON.
             """
         
@@ -101,8 +107,8 @@ class ActaExtractorGPT:
             
             # Normalizar nombres de campos
             numero_mesa = resultado.get("numero_mesa")
-            votos_c1 = resultado.get("votos_peru_libre")
-            votos_c2 = resultado.get("votos_fuerza_popular")
+            votos_c1 = resultado.get("votos_jp")
+            votos_c2 = resultado.get("votos_k")
             
             # Validar rangos
             if numero_mesa and not (1000 <= numero_mesa <= 999999):
@@ -117,7 +123,7 @@ class ActaExtractorGPT:
             if numero_mesa is None:
                 missing.append("número de mesa")
             if votos_c1 is None:
-                missing.append("votos Perú Libre")
+                missing.append("votos Juntos por el Perú")
             if votos_c2 is None:
                 missing.append("votos Fuerza Popular")
             

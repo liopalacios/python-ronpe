@@ -218,6 +218,9 @@ async def guardar_registro_db(
     nro_mesa: int,           # ← Añadir este parámetro
     votos_c1: int,           # ← Añadir este parámetro
     votos_c2: int,           # ← Añadir este parámetro
+    votos_blanco: int,       # ← Añadir este parámetro
+    votos_nulos: int,        # ← Añadir este parámetro
+    votos_inpugnados: int,   # ← Añadir este parámetro
     minio_path: str,
     es_reenvio: bool = False,
     dni_presidente_mesa: Optional[str] = None
@@ -232,11 +235,11 @@ async def guardar_registro_db(
             cur.execute("""
                 INSERT INTO reenviados (
                     message_id, sender, nro, votos_candidato_1, votos_candidato_2,
-                    dni_presidente, minio_path, created_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    votos_blanco, votos_nulos, votos_inpugnados, dni_presidente, minio_path, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 message_id, sender, nro_mesa, votos_c1,
-                votos_c2, dni_presidente_mesa,
+                votos_c2, votos_blanco, votos_nulos, votos_inpugnados, dni_presidente_mesa,
                 minio_path, datetime.now()
             ))
         else:
@@ -244,11 +247,11 @@ async def guardar_registro_db(
             cur.execute("""
                 INSERT INTO evidencias (
                     message_id, sender, nro, votos_candidato_1, votos_candidato_2,
-                    dni_presidente, minio_path, created_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    votos_blancos, votos_nulos, votos_inpugnados, dni_presidente, minio_path, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 message_id, sender, nro_mesa, votos_c1,
-                votos_c2, dni_presidente_mesa,
+                votos_c2, votos_blanco, votos_nulos, votos_inpugnados, dni_presidente_mesa,
                 minio_path, datetime.now()
             ))
         
@@ -347,15 +350,30 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
                 mensaje_detalle.append("✗ Mesa: no detectada")
             
             if datos.get("votos_candidato_1"):
-                mensaje_detalle.append(f"✓ Perú Libre: {datos['votos_candidato_1']}")
+                mensaje_detalle.append(f"✓ Juntos por el Perú: {datos['votos_candidato_1']}")
             else:
-                mensaje_detalle.append("✗ Perú Libre: no detectado")
+                mensaje_detalle.append("✗ Juntos por el Perú: no detectado")
             
             if datos.get("votos_candidato_2"):
                 mensaje_detalle.append(f"✓ Fuerza Popular: {datos['votos_candidato_2']}")
             else:
                 mensaje_detalle.append("✗ Fuerza Popular: no detectado")
-            
+
+            if datos.get("votos_blanco"):
+                mensaje_detalle.append(f"✓ Votos en Blanco: {datos['votos_blanco']}")
+            else:
+                mensaje_detalle.append("✗ Votos en Blanco: no detectados")
+
+            if datos.get("votos_nulos"):
+                mensaje_detalle.append(f"✓ Votos Nulos: {datos['votos_nulos']}")
+            else:
+                mensaje_detalle.append("✗ Votos Nulos: no detectados")
+
+            if datos.get("votos_inpugnados"):
+                mensaje_detalle.append(f"✓ Votos Inpugnados: {datos['votos_inpugnados']}")
+            else:
+                mensaje_detalle.append("✗ Votos Inpugnados: no detectados")
+
             print(f"📊 Detección: {' | '.join(mensaje_detalle)}")
             
             return {
@@ -381,22 +399,33 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
     numero_mesa = datos.get("numero_mesa")
     votos_c1 = datos.get("votos_candidato_1")
     votos_c2 = datos.get("votos_candidato_2")
+    votos_blanco = datos.get("votos_blanco")
+    votos_nulos = datos.get("votos_nulos")
+    votos_inpugnados = datos.get("votos_inpugnados")
     
     # También soportar nombres alternativos (por si acaso)
     if numero_mesa is None:
         numero_mesa = datos.get("nro") or datos.get("numero_acta")
     
     print(f"✅ Datos extraídos: nro_mesa={numero_mesa}, "
-          f"votos_candidato_1={votos_c1}, votos_candidato_2={votos_c2}")
+          f"votos_candidato_1={votos_c1}, votos_candidato_2={votos_c2}, "
+          f"votos_blanco={votos_blanco}, votos_nulos={votos_nulos}, "
+          f"votos_inpugnados={votos_inpugnados}")
     
     # 7. Validar que todos los datos están presentes
     missing_fields = []
     if numero_mesa is None:
         missing_fields.append("número de mesa")
     if votos_c1 is None:
-        missing_fields.append("votos Perú Libre")
+        missing_fields.append("votos Juntos por el Perú")
     if votos_c2 is None:
         missing_fields.append("votos Fuerza Popular")
+    if votos_blanco is None:
+        missing_fields.append("votos en Blanco")
+    if votos_nulos is None:
+        missing_fields.append("votos Nulos")
+    if votos_inpugnados is None:
+        missing_fields.append("votos Inpugnados")
     
     if missing_fields:
         return {
@@ -419,6 +448,9 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
             nro_mesa=numero_mesa,
             votos_c1=votos_c1,
             votos_c2=votos_c2,
+            votos_blanco=votos_blanco,
+            votos_nulos=votos_nulos,
+            votos_inpugnados=votos_inpugnados,
             minio_path=minio_path
         )
         
