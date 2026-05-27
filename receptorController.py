@@ -235,7 +235,7 @@ async def guardar_registro_db(
             cur.execute("""
                 INSERT INTO reenviados (
                     message_id, sender, nro, votos_candidato_1, votos_candidato_2,
-                    votos_blanco, votos_nulos, votos_inpugnados, dni_presidente, minio_path, created_at
+                    votos_blanco, votos_nulos, votos_impugnados, dni_presidente, minio_path, created_at
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 message_id, sender, nro_mesa, votos_c1,
@@ -247,7 +247,7 @@ async def guardar_registro_db(
             cur.execute("""
                 INSERT INTO evidencias (
                     message_id, sender, nro, votos_candidato_1, votos_candidato_2,
-                    votos_blancos, votos_nulos, votos_inpugnados, dni_presidente, minio_path, created_at
+                    votos_blancos, votos_nulos, votos_impugnados, dni_presidente, minio_path, created_at
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 message_id, sender, nro_mesa, votos_c1,
