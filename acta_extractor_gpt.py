@@ -109,6 +109,9 @@ class ActaExtractorGPT:
             numero_mesa = resultado.get("numero_mesa")
             votos_c1 = resultado.get("votos_jp")
             votos_c2 = resultado.get("votos_k")
+            votos_blanco = resultado.get("votos_blanco")
+            votos_nulos = resultado.get("votos_nulos")  
+            votos_inpugnados = resultado.get("votos_inpugnados")
             
             # Validar rangos
             if numero_mesa and not (1000 <= numero_mesa <= 999999):
@@ -117,7 +120,8 @@ class ActaExtractorGPT:
                 votos_c1 = None
             if votos_c2 and not (0 <= votos_c2 <= 500):
                 votos_c2 = None
-            
+            if votos_blanco and not (0 <= votos_blanco <= 500):
+                votos_blanco = None
             # Determinar qué campos faltan
             missing = []
             if numero_mesa is None:
@@ -135,7 +139,10 @@ class ActaExtractorGPT:
                 "data": {
                     "numero_mesa": numero_mesa,
                     "votos_candidato_1": votos_c1,
-                    "votos_candidato_2": votos_c2
+                    "votos_candidato_2": votos_c2,
+                    "votos_blancos": votos_blanco,
+                    "votos_nulos": votos_nulos,
+                    "votos_inpugnados": votos_inpugnados
                 },
                 "missing_fields": missing,
                 "raw_response": resultado
