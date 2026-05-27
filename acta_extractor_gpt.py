@@ -140,7 +140,7 @@ class ActaExtractorGPT:
                     "numero_mesa": numero_mesa,
                     "votos_candidato_1": votos_c1,
                     "votos_candidato_2": votos_c2,
-                    "votos_blancos": votos_blanco,
+                    "votos_blanco": votos_blanco,
                     "votos_nulos": votos_nulos,
                     "votos_inpugnados": votos_inpugnados
                 },
