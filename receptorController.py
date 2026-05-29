@@ -618,6 +618,7 @@ async def register_dni(request: dict):
     """Registrar DNI de un sender en Redis solo si no existe"""
     sender = request.get("sender")
     dni = request.get("dni")
+    nombre = request.get("nombre")  # Opcional, por si quieres guardar el nombre también
     
     if not sender or not dni:
         return {"success": False, "message": "Faltan datos requeridos"}
@@ -660,10 +661,10 @@ async def register_dni(request: dict):
         
         # Guardar en PostgreSQL
         cur.execute("""
-            INSERT INTO usuarios (sender, dni, created_at)
-            VALUES (%s, %s, %s)
+            INSERT INTO usuarios (sender, dni, nombre, created_at)
+            VALUES (%s, %s, %s, %s)
             ON CONFLICT (sender) DO UPDATE SET dni = EXCLUDED.dni
-        """, (sender, dni, datetime.now()))
+        """, (sender, dni, nombre, datetime.now()))
         conn.commit()
         cur.close()
         conn.close()
