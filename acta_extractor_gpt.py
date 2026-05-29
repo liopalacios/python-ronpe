@@ -34,21 +34,23 @@ class ActaExtractorGPT:
         self.prompt = """
             Analiza esta imagen de un ACTA ELECTORAL de Perú (ONPE) y extrae EXACTAMENTE estos 6 valores:
 
-            1. NÚMERO DE MESA: Busca junto a "Mesa de sufragio N°" - son 6 dígitos (ejemplo: 047291)
+            1. NÚMERO DE MESA: Busca junto a "Mesa de sufragio N°" - son 6 dígitos (ejemplo: 047291) en string porque hay mesas que empiezan con ceros, por ejemplo "047291" o "000123"
             2. VOTOS JP JUNTOS POR EL PERU: Número manuscrito junto al texto "JUNTOS POR EL PERU" o "JP"
             3. VOTOS FUERZA POPULAR: Número manuscrito junto al texto "FUERZA POPULAR" o "K"
             4. VOTOS EN BLANCO: Número manuscrito junto al texto "VOTOS EN BLANCO" alineado a su fila que le corresponda
             5. VOTOS NULOS: Número manuscrito junto al texto "VOTOS NULOS" alineado a su fila que le corresponda
             6. VOTOS INPUGNADOS: Número manuscrito junto al texto "VOTOS IMPUGNADOS" alineado a su fila que le corresponda
+            7. TOTAL DE VOTOS EMITIDOS: Número manuscrito junto al texto "TOTAL DE VOTOS EMITIDOS" alineado a su fila que le corresponda
 
             RESPONDE SOLO CON JSON en este formato exacto  (sin texto adicional) como ejemplo el siguiente json:
             {
-                "numero_mesa": 47291,
+                "numero_mesa": "047291",
                 "votos_jp": 150,
                 "votos_k": 120,
                 "votos_blanco": 5,
                 "votos_nulos": 3,   
-                "votos_inpugnados": 2
+                "votos_inpugnados": 2,
+                "total_votos_emitidos": 275
             }
 
             Si no puedes leer algún valor, ponlo como null, si la celda está vacía coloca valor cero.
@@ -116,6 +118,8 @@ class ActaExtractorGPT:
             votos_blanco = resultado.get("votos_blanco")
             votos_nulos = resultado.get("votos_nulos")  
             votos_inpugnados = resultado.get("votos_inpugnados")
+            total_votos_emitidos = resultado.get("total_votos_emitidos")
+
             
             # Validar rangos
             if numero_mesa and not (1000 <= numero_mesa <= 999999):
@@ -145,7 +149,8 @@ class ActaExtractorGPT:
                     "votos_candidato_2": votos_c2,
                     "votos_blanco": votos_blanco,
                     "votos_nulos": votos_nulos,
-                    "votos_inpugnados": votos_inpugnados
+                    "votos_inpugnados": votos_inpugnados,
+                    "total_votos_emitidos": total_votos_emitidos
                 },
                 "missing_fields": missing,
                 "raw_response": resultado
