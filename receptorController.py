@@ -277,6 +277,21 @@ async def marcar_registro_exitoso(sender: str, nro: str):
     key = f"registro_exitoso:{sender}"
     redis_client.setex(key, 86400 * 30, nro)  # Expira en 30 días
 
+
+@app.get("/whatsapp/confirmacion/{sender}")
+async def verificar_estado_confirmacion(sender: str):
+    """Verificar si un sender tiene confirmación pendiente"""
+    confirmacion = await obtener_confirmacion_pendiente(sender)
+    
+    if confirmacion:
+        return {
+            "pending": True,
+            "numero_mesa": confirmacion.get("numero_mesa"),
+            "expira_en": redis_client.ttl(f"pendiente_confirmacion:{sender}")
+        }
+    else:
+        return {"pending": False}
+
 # ============ ENDPOINT PRINCIPAL ============
 
 @app.post("/whatsapp/message")
@@ -287,6 +302,59 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
     print(f"📩 Mensaje recibido de {msg.sender} - Tipo: {msg.type}")
     print(f"📸 Imagen recibida: {bool(msg.image_base64)} - Texto: {msg.text is not None}")
     
+    if msg.type == "text" and msg.text:
+        texto = msg.text.strip().upper()
+        
+        # Verificar si hay confirmación pendiente
+        confirmacion = await obtener_confirmacion_pendiente(msg.sender)
+        
+        if confirmacion:
+            if texto in ["SI", "SÍ", "YES", "Y", "1"]:
+                # ✅ Usuario confirmó el número de mesa
+                numero_mesa = confirmacion.get("numero_mesa")
+                datos_temp = confirmacion.get("datos", {})
+                
+                # Guardar registro en PostgreSQL
+                await guardar_registro_db(
+                    message_id=msg.id,
+                    sender=msg.sender,
+                    nro_mesa=numero_mesa,
+                    votos_c1=datos_temp.get("votos_c1"),
+                    votos_c2=datos_temp.get("votos_c2"),
+                    votos_blanco=datos_temp.get("votos_blanco", 0),
+                    votos_nulos=datos_temp.get("votos_nulos", 0),
+                    votos_inpugnados=datos_temp.get("votos_inpugnados", 0),
+                    minio_path=datos_temp.get("minio_path"),
+                    dni_presidente_mesa=datos_temp.get("dni_presidente")
+                )
+                
+                # Marcar como registrado exitosamente
+                await marcar_registro_exitoso(msg.sender, numero_mesa)
+                
+                # Limpiar estado de confirmación
+                await eliminar_confirmacion_pendiente(msg.sender)
+                
+                respuestas = [
+                    "✅ ¡Excelente! Acta registrada correctamente.",
+                    "🙏 Gracias por confirmar. Todo está en orden.",
+                    "✅ Confirmación recibida. ¡Gracias por tu colaboración!"
+                ]
+                import random
+                return {"reply": random.choice(respuestas)}
+                
+            elif texto in ["NO", "No", "N", "0"]:
+                # ❌ Usuario dice que el número de mesa no es correcto
+                await eliminar_confirmacion_pendiente(msg.sender)
+                return {
+                    "reply": "📸 Por favor, envía nuevamente la foto del acta electoral para corregir el número de mesa."
+                }
+            else:
+                # Respuesta no válida, seguir preguntando
+                return {
+                    "reply": f"❓ No entendí tu respuesta. Por favor responde con *SI* o *NO* para confirmar si tu mesa es la {confirmacion.get('numero_mesa')}."
+                }
+    
+
     # 1. Verificar si es imagen
     if msg.type != "image" or not msg.image_base64:
         return {
@@ -426,6 +494,8 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
         missing_fields.append("votos Nulos")
     if votos_inpugnados is None:
         missing_fields.append("votos Inpugnados")
+
+    
     
     if missing_fields:
         return {
@@ -457,14 +527,36 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
         # Marcar en Redis como registrado exitosamente
         await marcar_registro_exitoso(msg.sender, numero_mesa)
         
-        # Respuesta aleatoria de éxito
-        respuestas_exito = [
-            f"Por favor confirma la 📋 Acta N° {numero_mesa}  "+ "🖨️",
+
+
+
+        if not missing_fields:
+            # Guardar imagen en MinIO
+            minio_path = await guardar_imagen_minio(msg.image_base64, msg.id, tipo="original")
             
-        ]
-        
-        import random
-        reply = random.choice(respuestas_exito)
+            # Preparar datos temporales
+            datos_temp = {
+                "votos_c1": votos_c1,
+                "votos_c2": votos_c2,
+                "votos_blanco": votos_blanco,
+                "votos_nulos": votos_nulos,
+                "votos_inpugnados": votos_inpugnados,
+                "minio_path": minio_path,
+                "dni_presidente": datos.get("dni_presidente_mesa")
+            }
+            
+            # Marcar confirmación pendiente en Redis
+            await marcar_confirmacion_pendiente(msg.sender, numero_mesa, datos_temp)
+
+
+            # Respuesta aleatoria de éxito
+            respuestas_exito = [
+                f"Por favor confirmanos que tu mesa es la  {numero_mesa} \n \n *(SI/NO)* ",
+                
+            ]
+            
+            import random
+            reply = random.choice(respuestas_exito)
         
         return {"reply": reply}
         
@@ -475,6 +567,30 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
         return {
             "reply": "⚠️ Error interno al guardar la evidencia. Por favor intenta nuevamente."
         }
+
+
+async def marcar_confirmacion_pendiente(sender: str, numero_mesa: str, datos_temp: dict):
+    """Marca que el contacto está esperando confirmación del número de mesa"""
+    key = f"pendiente_confirmacion:{sender}"
+    data = {
+        "numero_mesa": numero_mesa,
+        "datos": datos_temp,
+        "timestamp": datetime.now().isoformat()
+    }
+    redis_client.setex(key, 3600, json.dumps(data))  # Expira en 1 hora
+
+async def obtener_confirmacion_pendiente(sender: str) -> Optional[dict]:
+    """Obtiene datos de confirmación pendiente si existe"""
+    key = f"pendiente_confirmacion:{sender}"
+    data = redis_client.get(key)
+    if data:
+        return json.loads(data)
+    return None
+
+async def eliminar_confirmacion_pendiente(sender: str):
+    """Elimina el estado de confirmación pendiente"""
+    key = f"pendiente_confirmacion:{sender}"
+    redis_client.delete(key)
 
 # ============ ENDPOINTS DE CONSULTA ============
 
