@@ -102,6 +102,7 @@ class ImagenData(BaseModel):
     cantidad_candidato_1: Optional[int] = None
     cantidad_candidato_2: Optional[int] = None
     dni_presidente_mesa: Optional[str] = None
+    total_votos_emitidos: Optional[int] = None
     completo: bool = False
     faltantes: list = []
 
@@ -144,6 +145,7 @@ async def guardar_registro_db(
     votos_blanco: int,       # ← Añadir este parámetro
     votos_nulos: int,        # ← Añadir este parámetro
     votos_inpugnados: int,   # ← Añadir este parámetro
+    total_votos_emitidos: int, # ← Añadir este parámetro
     minio_path: str,
     es_reenvio: bool = False,
     dni_presidente_mesa: Optional[str] = None
@@ -158,11 +160,11 @@ async def guardar_registro_db(
             cur.execute("""
                 INSERT INTO reenviados (
                     message_id, sender, nro, votos_candidato_1, votos_candidato_2,
-                    votos_blanco, votos_nulos, votos_impugnados, dni_presidente, minio_path, created_at
+                    votos_blanco, votos_nulos, votos_impugnados, total_votos_emitidos, dni_presidente, minio_path, created_at
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 message_id, sender, nro_mesa, votos_c1,
-                votos_c2, votos_blanco, votos_nulos, votos_inpugnados, dni_presidente_mesa,
+                votos_c2, votos_blanco, votos_nulos, votos_inpugnados, total_votos_emitidos, dni_presidente_mesa,
                 minio_path, datetime.now()
             ))
         else:
@@ -170,11 +172,11 @@ async def guardar_registro_db(
             cur.execute("""
                 INSERT INTO evidencias (
                     message_id, sender, nro, votos_candidato_1, votos_candidato_2,
-                    votos_blancos, votos_nulos, votos_impugnados, dni_presidente, minio_path, created_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    votos_blancos, votos_nulos, votos_impugnados, total_votos_emitidos, dni_presidente, minio_path, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 message_id, sender, nro_mesa, votos_c1,
-                votos_c2, votos_blanco, votos_nulos, votos_inpugnados, dni_presidente_mesa,
+                votos_c2, votos_blanco, votos_nulos, votos_inpugnados, total_votos_emitidos, dni_presidente_mesa,
                 minio_path, datetime.now()
             ))
         
@@ -238,18 +240,7 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
                 datos_temp = confirmacion.get("datos", {})
                 
                 # Guardar registro en PostgreSQL
-                await guardar_registro_db(
-                    message_id=msg.id,
-                    sender=msg.sender,
-                    nro_mesa=numero_mesa,
-                    votos_c1=datos_temp.get("votos_c1"),
-                    votos_c2=datos_temp.get("votos_c2"),
-                    votos_blanco=datos_temp.get("votos_blanco", 0),
-                    votos_nulos=datos_temp.get("votos_nulos", 0),
-                    votos_inpugnados=datos_temp.get("votos_inpugnados", 0),
-                    minio_path=datos_temp.get("minio_path"),
-                    dni_presidente_mesa=datos_temp.get("dni_presidente")
-                )
+                await actualizar_confirmacion_registro(msg.sender, numero_mesa)
                 
                 # Marcar como registrado exitosamente
                 await marcar_registro_exitoso(msg.sender, numero_mesa)
@@ -393,6 +384,7 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
     votos_blanco = datos.get("votos_blanco")
     votos_nulos = datos.get("votos_nulos")
     votos_inpugnados = datos.get("votos_inpugnados")
+    total_votos_emitidos = datos.get("total_votos_emitidos")
     
     # También soportar nombres alternativos (por si acaso)
     if numero_mesa is None:
@@ -401,7 +393,7 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
     print(f"✅ Datos extraídos: nro_mesa={numero_mesa}, "
           f"votos_candidato_1={votos_c1}, votos_candidato_2={votos_c2}, "
           f"votos_blanco={votos_blanco}, votos_nulos={votos_nulos}, "
-          f"votos_inpugnados={votos_inpugnados}")
+          f"votos_inpugnados={votos_inpugnados}, total_votos_emitidos={total_votos_emitidos}")
     
     # 7. Validar que todos los datos están presentes
     missing_fields = []
@@ -444,6 +436,7 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
             votos_blanco=votos_blanco,
             votos_nulos=votos_nulos,
             votos_inpugnados=votos_inpugnados,
+            total_votos_emitidos=total_votos_emitidos,
             minio_path=minio_path
         )
         
@@ -491,6 +484,38 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
             "reply": "⚠️ Error interno al guardar la evidencia. Por favor intenta nuevamente."
         }
 
+
+async def actualizar_confirmacion_registro(sender: str, numero_mesa: str):
+    """Actualiza el campo confirmado = 1 para el registro del sender"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    try:
+        cur.execute("""
+            UPDATE evidencias 
+            SET confirmado = 1,
+                updated_at = NOW()
+            WHERE sender = %s 
+            AND nro = %s
+            AND confirmado = 0
+            ORDER BY created_at DESC 
+            LIMIT 1
+        """, (sender, numero_mesa))
+        
+        conn.commit()
+        
+        if cur.rowcount > 0:
+            print(f"✅ Registro confirmado para sender {sender}, mesa {numero_mesa}")
+        else:
+            print(f"⚠️ No se encontró registro pendiente para sender {sender}")
+            
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error actualizando confirmación: {e}")
+        raise
+    finally:
+        cur.close()
+        conn.close()
 
 async def marcar_confirmacion_pendiente(sender: str, numero_mesa: str, datos_temp: dict):
     """Marca que el contacto está esperando confirmación del número de mesa"""
