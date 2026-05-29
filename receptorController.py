@@ -113,7 +113,7 @@ async def extraer_datos_imagen(image_base64: str) -> ImagenData:
     prompt = """
     Analiza esta imagen de un acta electoral y extrae los siguientes datos:
     
-    1. Número de acta (nro)
+    1. Número de acta (nro) en string porque hay mesas que empiezan con ceros, por ejemplo "047291" o "000123"
     2. Cantidad de votos candidato 1 (cantidad_candidato_1)
     3. Cantidad de votos candidato 2 (cantidad_candidato_2)
     4. DNI del presidente de mesa (dni_presidente_mesa)
