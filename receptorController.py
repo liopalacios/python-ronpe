@@ -249,9 +249,7 @@ async def process_whatsapp_message(msg: WhatsAppMessage):
                 await eliminar_confirmacion_pendiente(msg.sender)
                 
                 respuestas = [
-                    "✅ ¡Excelente! Acta registrada correctamente.",
-                    "🙏 Gracias por confirmar. Todo está en orden.",
-                    "✅ Confirmación recibida. ¡Gracias por tu colaboración!"
+                    "✅ Recepción conforme, muchas gracias por tu valioso apoyo."
                 ]
                 import random
                 return {"reply": random.choice(respuestas)}
@@ -493,13 +491,11 @@ async def actualizar_confirmacion_registro(sender: str, numero_mesa: str):
     try:
         cur.execute("""
             UPDATE evidencias 
-            SET confirmado = 1,
-                updated_at = NOW()
+            SET confirmado = 1 
             WHERE sender = %s 
             AND nro = %s
-            AND confirmado = 0
-            ORDER BY created_at DESC 
-            LIMIT 1
+            AND (confirmado = 0 or confirmado IS NULL)
+            
         """, (sender, numero_mesa))
         
         conn.commit()

@@ -110,7 +110,7 @@ class ActaExtractorGPT:
                 respuesta_texto = respuesta_texto[:-3]
             
             resultado = json.loads(respuesta_texto)
-            
+            print(f"✅ Datos extraídos: {resultado}")
             # Normalizar nombres de campos
             numero_mesa = resultado.get("numero_mesa")
             votos_c1 = resultado.get("votos_jp")
@@ -119,16 +119,9 @@ class ActaExtractorGPT:
             votos_nulos = resultado.get("votos_nulos")  
             votos_inpugnados = resultado.get("votos_inpugnados")
             total_votos_emitidos = resultado.get("total_votos_emitidos")
-
+            print(f"✅ Campos normalizados: numero_mesa={numero_mesa}, votos_c1={votos_c1}, votos_c2={votos_c2}, votos_blanco={votos_blanco}, votos_nulos={votos_nulos}, votos_inpugnados={votos_inpugnados}, total_votos_emitidos={total_votos_emitidos}")
             
-            # Validar rangos
-            if numero_mesa and not (1000 <= numero_mesa <= 999999):
-                numero_mesa = None
-            if votos_c1 and not (0 <= votos_c1 <= 500):
-                votos_c1 = None
-            if votos_c2 and not (0 <= votos_c2 <= 500):
-                votos_c2 = None
-            
+           
             # Determinar qué campos faltan
             missing = []
             if numero_mesa is None:
