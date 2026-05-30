@@ -74,7 +74,7 @@ class ActaExtractorGPT:
             
             # Llamar a GPT-4V
             response = self.client.chat.completions.create(
-                model="gpt-4o-mini",  # Usa "gpt-4o" para mejor precisión
+                model="gpt-4.1-mini",  # Usa "gpt-4o" para mejor precisión
                 messages=[
                     {
                         "role": "user",
