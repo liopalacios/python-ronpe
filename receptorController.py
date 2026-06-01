@@ -242,7 +242,7 @@ async def process_text_message(request: dict):
 
     connfirt = get_db_connection()
     curfirt = connfirt.cursor()
-    curfirt.execute("SELECT sender FROM usuarios WHERE sender != %s", (sender,))
+    curfirt.execute("SELECT sender FROM usuarios WHERE sender = %s", (sender,))
     existe_usuario = curfirt.fetchone()
     
     if existe_usuario:
