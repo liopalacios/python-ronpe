@@ -1044,16 +1044,16 @@ async def register_dni(request: dict):
         conn.close()
         
         dni_registrado_correctamente = [
-            f"✅ DNI registrado correctamente.\n Puede proceder a enviar la foto del acta electoral.",
-            f"✅ El DNI ha sido registrado exitosamente. \n Ahora puedes enviar la foto del acta electoral.",
-            f" DNI guardado correctamente en el sistema. ✅ \n Por favor, envía la foto del acta electoral para continuar.",
-            f"✅ Se ha registrado el DNI sin inconvenientes.\n Ahora, por favor, envía la foto del acta electoral.",
-            f" El número de DNI fue registrado con éxito. ✅ \n Por favor, envía la foto del acta electoral para seguir adelante.",
-            f"✅ Registro de DNI completado satisfactoriamente. \n Ahora puedes enviar la foto del acta electoral.",
-            f" DNI almacenado correctamente. ✅ \n Por favor, envía la foto del acta electoral para continuar con el proceso.",
-            f"✅ El DNI se ha registrado de forma exitosa. \n Ahora, por favor, envía la foto del acta electoral para avanzar.",
-            f" Proceso completado: DNI registrado correctamente. ✅ \n Por favor, envía la foto del acta electoral para seguir con el registro.",
-            f"✅ Tu DNI ha quedado registrado sin errores. \n Ahora puedes enviar la foto del acta electoral para continuar con el proceso."
+            f"{nombre} ✅ Su DNI se registró correctamente.\n Puede proceder a enviar la foto del acta electoral.",
+            f"{nombre} ✅ Su DNI ha sido registrado exitosamente. \n Ahora puedes enviar la foto del acta electoral.",
+            f"{nombre} ✅ Su DNI se ha guardado correctamente en el sistema. \n Por favor, envía la foto del acta electoral para continuar.",
+            f"{nombre} ✅ Se ha registrado su DNI sin inconvenientes.\n Ahora, por favor, envía la foto del acta electoral.",
+            f"{nombre} ✅ Su número de DNI fue registrado con éxito. ✅ \n Por favor, envía la foto del acta electoral para seguir adelante.",
+            f"{nombre} ✅ Registro de DNI completado satisfactoriamente. \n Ahora puedes enviar la foto del acta electoral.",
+            f"{nombre} ✅ Su DNI se almacenó correctamente. \n Por favor, envía la foto del acta electoral para continuar con el proceso.",
+            f"{nombre} ✅ Su DNI se ha registrado de forma exitosa. \n Ahora, por favor, envía la foto del acta electoral para avanzar.",
+            f"{nombre} Proceso completado: Su DNI se ha registrado correctamente. ✅ \n Por favor, envía la foto del acta electoral para seguir con el registro.",
+            f"{nombre} ✅ Tu DNI ha quedado registrado sin errores. \n Ahora puedes enviar la foto del acta electoral para continuar con el proceso."
         ]
 
         reply = random.choice(dni_registrado_correctamente)
