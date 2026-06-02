@@ -158,11 +158,11 @@ RESPUESTAS_CONFIRMACION_NO = [
 ]
 
 RESPUESTAS_TEXTO_GENERICO = [
-    "🙏 Estamos atentos a su valioso apoyo. \n Esperamos tu foto del acta.",
-    "✅ Gracias por comunicarte. \n Si deseas ya puedes enviar la foto de tu acta electoral.📸",
-    "📋 Eres parte de la solución. \n Esperamos tu foto del acta.",
-    "🙌 Gracias por comunicarte. \n Estas habilitado para enviar tu foto del acta.",
-    "✅ Continuamos coordinando. \n Por favor, envía la foto de tu acta electoral.   📸"
+    "Estas registrado 🙏 Estamos atentos a su valioso apoyo. \n Esperamos tu foto del acta.",
+    "Eres personal registrado ✅ Gracias por comunicarte. \n Si deseas ya puedes enviar la foto de tu acta electoral.📸",
+    "Eres personero registrado 📋 Eres parte de la solución. \n Esperamos tu foto del acta.",
+    "Patriota registrado 🙌 Gracias por comunicarte. \n Estas habilitado para enviar tu foto del acta.",
+    "Eres un contacto registrado ✅ Continuamos coordinando. \n Por favor, envía la foto de tu acta electoral.   📸"
 ]
 # ============ FUNCIONES DE IA ============
 # ============ FUNCIONES DE COLA EN REDIS ============
